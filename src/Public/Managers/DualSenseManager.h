@@ -1,6 +1,9 @@
 ﻿#pragma once
 
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/variant/packed_byte_array.hpp>
+#include <vector>
+#include <cstdint>
 using namespace godot;
 
 namespace godot {
@@ -23,8 +26,10 @@ namespace godot {
 
 		static bool is_connected();
 
-		static void reset_left();
-		static void reset_right();
+		static void reset_trigger(int hand, int device_id);
+		static void set_trigger_resistance(int hand, int start_zone, int strength, int device_id);
+		static void set_trigger_weapon(int hand, int start_zone, int amplitude, int behavior, int trigger, int device_id);
+		static void set_trigger_custom(int hand, PackedByteArray buffer, int device_id);
 	private:
 		static DualSenseManager *singleton;
 

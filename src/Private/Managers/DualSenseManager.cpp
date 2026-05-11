@@ -56,20 +56,35 @@ void DualSenseManager::_exit_tree() {
 
 void DualSenseManager::_bind_methods() {
 	ClassDB::bind_static_method("DualSenseManager", D_METHOD("is_connected"), &DualSenseManager::is_connected);
+	ClassDB::bind_static_method("DualSenseManager", D_METHOD("reset_trigger", "hand", "device_id"), &DualSenseManager::reset_trigger);
     
 	ClassDB::bind_static_method("DualSenseManager", D_METHOD("test_rumble"), &DualSenseManager::test_rumble);
 	ClassDB::bind_static_method("DualSenseManager", D_METHOD("test_lightbar"), &DualSenseManager::test_lightbar);
 	ClassDB::bind_static_method("DualSenseManager", D_METHOD("test_weapon"), &DualSenseManager::test_weapon);
 	ClassDB::bind_static_method("DualSenseManager", D_METHOD("test_custom_trigger"), &DualSenseManager::test_custom_trigger);
+
+    ClassDB::bind_static_method("DualSenseManager", D_METHOD("set_trigger_resistance", "hand", "start_zone", "strength", "device_id"), &DualSenseManager::set_trigger_resistance);
+    ClassDB::bind_static_method("DualSenseManager", D_METHOD("set_trigger_weapon", "hand", "start_zone", "amplitude", "behavior", "trigger", "device_id"), &DualSenseManager::set_trigger_weapon);
+    ClassDB::bind_static_method("DualSenseManager", D_METHOD("set_trigger_custom", "hand", "buffer", "device_id"), &DualSenseManager::set_trigger_custom);
 }
 
 bool DualSenseManager::is_connected() {
     return FGodotDeviceRegistry::GetGamepad(1) != nullptr;
 }
 
-void DualSenseManager::reset_left() {
-    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(1)) {
-        UtilityFunctions::print("Left trigger reset...");
+static std::uint8_t clamp_byte(int v) {
+    if (v < 0) return 0;
+    if (v > 255) return 255;
+    return static_cast<std::uint8_t>(v);
+}
+
+static EDSGamepadHand to_hand(int hand) {
+    return hand == 0 ? EDSGamepadHand::Left : EDSGamepadHand::Right;
+}
+
+void DualSenseManager::reset_trigger(int hand, int device_id = 1) {
+    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(device_id)) {
+        UtilityFunctions::print("Trigger reset...");
         gamepad->StopTrigger(
             static_cast<EDSGamepadHand>(GamepadDefs::GamepadHand::LEFT_HAND)
         );
@@ -78,13 +93,31 @@ void DualSenseManager::reset_left() {
     }
 }
 
-void DualSenseManager::reset_right() {
-    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(1)) {
-        UtilityFunctions::print("Right trigger reset...");
-        gamepad->StopTrigger(
-            static_cast<EDSGamepadHand>(GamepadDefs::GamepadHand::RIGHT_HAND)
-        );
-    } else {
+void DualSenseManager::set_trigger_resistance(int hand, int start_zone, int strength, int device_id) {
+    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(device_id)) {
+        gamepad->SetResistance(clamp_byte(start_zone), clamp_byte(strength), to_hand(hand));
+    }
+    else {
+        UtilityFunctions::print("Not found gamepad");
+    }
+}
+
+void DualSenseManager::set_trigger_weapon(int hand, int start_zone, int amplitude, int behavior, int trigger, int device_id) {
+    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(device_id)) {
+        gamepad->SetWeapon25(clamp_byte(start_zone), clamp_byte(amplitude), clamp_byte(behavior), clamp_byte(trigger), to_hand(hand));
+    }
+    else {
+        UtilityFunctions::print("Not found gamepad");
+    }
+}
+
+void DualSenseManager::set_trigger_custom(int hand, PackedByteArray buffer, int device_id) {
+    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(device_id)) {
+        // Convert PackedByteArray to std::vector for internal API
+        std::vector<std::uint8_t> vec(buffer.ptr(), buffer.ptr() + buffer.size());
+        gamepad->SetCustomTrigger(to_hand(hand), vec);
+    }
+    else {
         UtilityFunctions::print("Not found gamepad");
     }
 }
