@@ -30,8 +30,13 @@ namespace godot {
 		static void set_trigger_resistance(int hand, int start_zone, int strength, int device_id);
 		static void set_trigger_weapon(int hand, int start_zone, int amplitude, int behavior, int trigger, int device_id);
 		static void set_trigger_custom(int hand, PackedByteArray buffer, int device_id);
+		static void rumble(int left, int right, float duration, int device_id);
 	private:
 		static DualSenseManager *singleton;
+		static float vibration_remaining_duration;
+		static int vibration_left;
+		static int vibration_right;
+		static int vibration_device_id;
 
 	protected:
 		static void _bind_methods();

@@ -10,6 +10,10 @@
 using namespace godot;
 
 DualSenseManager *DualSenseManager::singleton = nullptr;
+float DualSenseManager::vibration_remaining_duration = 0.0f;
+int DualSenseManager::vibration_left = 0;
+int DualSenseManager::vibration_right = 0;
+int DualSenseManager::vibration_device_id = 1;
 
 DualSenseManager::DualSenseManager() {
     singleton = this;
@@ -36,6 +40,18 @@ void DualSenseManager::_ready() {
 
 void DualSenseManager::_process(double delta) {
     FGodotDeviceRegistry::DiscoverDevices(delta);
+    
+    // Handle vibration timing
+    if (vibration_remaining_duration > 0.0f) {
+        vibration_remaining_duration -= static_cast<float>(delta);
+        if (vibration_remaining_duration <= 0.0f) {
+            // Stop vibration when duration expires
+            if (const auto gamepad = FGodotDeviceRegistry::GetGamepad(vibration_device_id)) {
+                gamepad->SetVibration(0, 0);
+            }
+            vibration_remaining_duration = 0.0f;
+        }
+    }
 }
 
 void DualSenseManager::_exit_tree() {
@@ -66,6 +82,7 @@ void DualSenseManager::_bind_methods() {
     ClassDB::bind_static_method("DualSenseManager", D_METHOD("set_trigger_resistance", "hand", "start_zone", "strength", "device_id"), &DualSenseManager::set_trigger_resistance);
     ClassDB::bind_static_method("DualSenseManager", D_METHOD("set_trigger_weapon", "hand", "start_zone", "amplitude", "behavior", "trigger", "device_id"), &DualSenseManager::set_trigger_weapon);
     ClassDB::bind_static_method("DualSenseManager", D_METHOD("set_trigger_custom", "hand", "buffer", "device_id"), &DualSenseManager::set_trigger_custom);
+	ClassDB::bind_static_method("DualSenseManager", D_METHOD("rumble", "left", "right", "duration", "device_id"), &DualSenseManager::rumble);
 }
 
 bool DualSenseManager::is_connected() {
@@ -118,6 +135,19 @@ void DualSenseManager::set_trigger_custom(int hand, PackedByteArray buffer, int 
         gamepad->SetCustomTrigger(to_hand(hand), vec);
     }
     else {
+        UtilityFunctions::print("Not found gamepad");
+    }
+}
+
+void DualSenseManager::rumble(int left, int right, float duration, int device_id = 1) {
+    if (const auto gamepad = FGodotDeviceRegistry::GetGamepad(device_id)) {
+        gamepad->SetVibration(clamp_byte(left), clamp_byte(right));
+        // Store vibration state for timing
+        vibration_left = clamp_byte(left);
+        vibration_right = clamp_byte(right);
+        vibration_device_id = device_id;
+        vibration_remaining_duration = (duration > 0.0f) ? duration : 0.0f;
+    } else {
         UtilityFunctions::print("Not found gamepad");
     }
 }
