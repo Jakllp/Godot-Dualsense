@@ -37,6 +37,16 @@ namespace godot {
 		static void set_lightbar_flash(Color color, float brightness_time, float toggle_time, int device_id);
 		static void set_player_led(int led, int brightness, int device_id);
 		static void set_player_led_direct(int bitmask, int brightness, int device_id);
+		/**
+		 * # Create a simple haptic pattern (64 bytes max)
+			var haptic_data = PackedByteArray()
+			haptic_data.resize(10)
+			haptic_data[0] = 0x92  # Protocol header
+			haptic_data[1] = 0x40  # Protocol header
+			# ... add your haptic pattern bytes
+
+			DualSenseManager.set_audio_haptic(haptic_data, 1)
+		 */
 		static void set_audio_haptic(PackedByteArray buffer, int device_id);
 		static void set_mic_settings(int mic_enabled, int mic_volume, int device_id);
 	private:
