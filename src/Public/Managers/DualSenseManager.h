@@ -20,6 +20,11 @@ namespace godot {
 		static void test_weapon();
 		static void test_lightbar();
 		static void test_custom_trigger();
+
+		static bool is_connected();
+
+		static void reset_left();
+		static void reset_right();
 	private:
 		static DualSenseManager *singleton;
 

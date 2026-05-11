@@ -39,10 +39,55 @@ void DualSenseManager::_process(double delta) {
 }
 
 void DualSenseManager::_exit_tree() {
+    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(1)) {
+        UtilityFunctions::print("Shutdown effects");
+        gamepad->StopTrigger(
+            static_cast<EDSGamepadHand>(GamepadDefs::GamepadHand::RIGHT_HAND)
+        );
+        gamepad->StopTrigger(
+            static_cast<EDSGamepadHand>(GamepadDefs::GamepadHand::LEFT_HAND)
+        );
+    } else {
+        UtilityFunctions::print("Not found gamepad");
+    }
+
     FGodotDeviceRegistry::Shutdown();
 }
 
-void DualSenseManager::_bind_methods() {}
+void DualSenseManager::_bind_methods() {
+	ClassDB::bind_static_method("DualSenseManager", D_METHOD("is_connected"), &DualSenseManager::is_connected);
+    
+	ClassDB::bind_static_method("DualSenseManager", D_METHOD("test_rumble"), &DualSenseManager::test_rumble);
+	ClassDB::bind_static_method("DualSenseManager", D_METHOD("test_lightbar"), &DualSenseManager::test_lightbar);
+	ClassDB::bind_static_method("DualSenseManager", D_METHOD("test_weapon"), &DualSenseManager::test_weapon);
+	ClassDB::bind_static_method("DualSenseManager", D_METHOD("test_custom_trigger"), &DualSenseManager::test_custom_trigger);
+}
+
+bool DualSenseManager::is_connected() {
+    return FGodotDeviceRegistry::GetGamepad(1) != nullptr;
+}
+
+void DualSenseManager::reset_left() {
+    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(1)) {
+        UtilityFunctions::print("Left trigger reset...");
+        gamepad->StopTrigger(
+            static_cast<EDSGamepadHand>(GamepadDefs::GamepadHand::LEFT_HAND)
+        );
+    } else {
+        UtilityFunctions::print("Not found gamepad");
+    }
+}
+
+void DualSenseManager::reset_right() {
+    if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(1)) {
+        UtilityFunctions::print("Right trigger reset...");
+        gamepad->StopTrigger(
+            static_cast<EDSGamepadHand>(GamepadDefs::GamepadHand::RIGHT_HAND)
+        );
+    } else {
+        UtilityFunctions::print("Not found gamepad");
+    }
+}
 
 void DualSenseManager::test_rumble() {
     if (const auto gamepad = FGodotDeviceRegistry::GetGamepad(1)) {

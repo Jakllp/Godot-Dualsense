@@ -37,6 +37,9 @@ for root, dirs, files in os.walk("src"):
     for file in files:
         if file.endswith(".cpp"):
             file_path = os.path.join(root, file)
+            # Skip example sources to avoid building sample adapters/plugins
+            if "Examples" in file_path:
+                continue
             # Filtro de plataforma simples
             if env["platform"] == "windows" and ("Linux" in file_path or "Mac" in file_path or "Android" in file_path):
                 continue
