@@ -86,7 +86,7 @@ void DualSenseManager::reset_trigger(int hand, int device_id = 1) {
     if (const auto gamepad = FGodotDeviceRegistry::GetTriggerGamepad(device_id)) {
         UtilityFunctions::print("Trigger reset...");
         gamepad->StopTrigger(
-            static_cast<EDSGamepadHand>(GamepadDefs::GamepadHand::LEFT_HAND)
+            static_cast<EDSGamepadHand>(to_hand(hand))
         );
     } else {
         UtilityFunctions::print("Not found gamepad");
