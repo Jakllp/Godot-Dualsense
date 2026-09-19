@@ -255,7 +255,12 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		const unsigned long Error = GetLastError();
 		if (Error != ERROR_IO_PENDING)
 		{
+			printf("[AudioHaptic][Windows] WriteFile failed. Error: %lu\n", Error);
 		}
+	}
+	else
+	{
+		printf("[AudioHaptic][Windows] BytesWritten=%lu (expected=%zu)\n", BytesWritten, BufferSize);
 	}
 }
 
