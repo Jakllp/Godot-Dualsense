@@ -235,7 +235,7 @@ void DualSenseManager::set_player_led_direct(int bitmask, int brightness, int de
         // Use bitmask value directly for granular LED control
         // Bitmask values: 0x01=Left, 0x02=MiddleLeft, 0x04=Middle, 0x08=MiddleRight, 0x10=Right
         // Can combine: 0x01|0x04 for Left+Middle, etc.
-        gamepad->SetPlayerLedBitmask(clamp_byte(bitmask), clamp_byte(brightness));
+        gamepad->SetPlayerLed(static_cast<EDSPlayer>(clamp_byte(bitmask)), clamp_byte(brightness));
     } else {
         UtilityFunctions::print("Not found gamepad");
     }
@@ -244,7 +244,7 @@ void DualSenseManager::set_player_led_direct(int bitmask, int brightness, int de
 void DualSenseManager::set_audio_haptic(PackedByteArray buffer, int device_id) {
     UtilityFunctions::print(String("set_audio_haptic called with buffer size: ") + String::num(buffer.size()));
     
-    if (!buffer.is_empty()) {
+    if (buffer.is_empty()) {
         UtilityFunctions::print("Buffer is empty!");
         return;
     }

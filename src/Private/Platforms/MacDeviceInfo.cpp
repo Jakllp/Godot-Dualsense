@@ -217,7 +217,9 @@ void FMacDeviceInfo::Write(FDeviceContext* Context)
 		return;
 	}
 
-	const CFIndex Length = Context->DeviceType == EDSDeviceType::DualShock4 ? 32 : 74;
+	const CFIndex Length = Context->ConnectionType == EDSDeviceConnection::Bluetooth
+		? 78
+		: (Context->DeviceType == EDSDeviceType::DualShock4 ? 32 : 74);
 	auto Device = static_cast<IOHIDDeviceRef>(Context->Handle);
 	const uint8_t ReportId = Context->BufferOutput[0];
 	if (IOHIDDeviceSetReport(Device, kIOHIDReportTypeOutput, ReportId, Context->BufferOutput + 1, Length - 1) !=
@@ -229,7 +231,17 @@ void FMacDeviceInfo::Write(FDeviceContext* Context)
 
 void FMacDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 {
-	Write(Context);
+	if (!Context || Context->Handle == INVALID_PLATFORM_HANDLE)
+	{
+		return;
+	}
+
+	auto Device = static_cast<IOHIDDeviceRef>(Context->Handle);
+	if (IOHIDDeviceSetReport(Device, kIOHIDReportTypeOutput, Context->BufferAudio[0],
+		Context->BufferAudio + 1, sizeof(Context->BufferAudio) - 1) != kIOReturnSuccess)
+	{
+		Context->IsConnected = false;
+	}
 }
 
 void FMacDeviceInfo::InvalidateHandle(FDeviceContext* Context)
