@@ -5,7 +5,11 @@
 #include <godot_cpp/classes/engine.hpp>
 #include "Adapter/GodotDeviceRegistry.h"
 #include "API/GamepadDefs.h"
+#ifdef _WIN32
 #include "Platforms/Windows/WindowsHardwarePolicy.h"
+#elif defined(__APPLE__)
+#include "Platforms/Mac/MacHardwarePolicy.h"
+#endif
 #include "GCore/Interfaces/IPlatformHardwareInfo.h"
 
 using namespace godot;
@@ -33,6 +37,9 @@ void DualSenseManager::_ready() {
 #ifdef _WIN32
     std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
     IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
+#elif defined(__APPLE__)
+    std::unique_ptr<IPlatformHardwareInfo> MacInstance = std::make_unique<FMacPlatform::FMacHardware>();
+    IPlatformHardwareInfo::SetInstance(std::move(MacInstance));
 #endif
 
     FGodotDeviceRegistry::Initialize();

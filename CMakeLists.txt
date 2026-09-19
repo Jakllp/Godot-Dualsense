@@ -49,6 +49,8 @@ if(WIN32)
     list(FILTER SOURCES EXCLUDE REGEX ".*(Linux|Mac|Android|IOS).*")
 elseif(UNIX AND NOT APPLE)
     list(FILTER SOURCES EXCLUDE REGEX ".*(Windows|Mac|Android|IOS).*")
+elseif(APPLE)
+    list(FILTER SOURCES EXCLUDE REGEX ".*(Windows|Linux|Android|IOS).*")
 endif()
 
 # --- Definição do Alvo (Target) ---
@@ -57,6 +59,10 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES}
         src/Public/API/GamepadDefs.h
         src/Private/API/GamepadDefs.cpp
 )
+
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE "-framework IOKit" "-framework CoreFoundation")
+endif()
 
 # --- Aviso sobre Godot-CPP ---
 # Como não estamos compilando o godot-cpp via CMake aqui (usamos SCons),
