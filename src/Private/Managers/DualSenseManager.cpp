@@ -173,10 +173,12 @@ void DualSenseManager::set_trigger_custom(int hand, PackedByteArray buffer, int 
 
 void DualSenseManager::rumble(int left, int right, float duration, int device_id) {
     if (const auto gamepad = FGodotDeviceRegistry::GetGamepad(device_id)) {
-        gamepad->SetVibration(clamp_byte(left), clamp_byte(right));
+        // this shit is backwards. So let's swap it here...
+        gamepad->SetVibration(clamp_byte(right), clamp_byte(left));
         // Store vibration state for timing
-        vibration_left = clamp_byte(left);
-        vibration_right = clamp_byte(right);
+        //... and here
+        vibration_right = clamp_byte(left);
+        vibration_left = clamp_byte(right);
         vibration_device_id = device_id;
         vibration_remaining_duration = (duration > 0.0f) ? duration : 0.0f;
     } else {
@@ -240,14 +242,42 @@ void DualSenseManager::set_player_led_direct(int bitmask, int brightness, int de
 }
 
 void DualSenseManager::set_audio_haptic(PackedByteArray buffer, int device_id) {
+    UtilityFunctions::print(String("set_audio_haptic called with buffer size: ") + String::num(buffer.size()));
+    
+    if (!buffer.is_empty()) {
+        UtilityFunctions::print("Buffer is empty!");
+        return;
+    }
+    
     if (const auto gamepad = FGodotDeviceRegistry::GetGamepad(device_id)) {
-        // Convert PackedByteArray to std::vector, cap at 64 bytes
-        size_t data_size = std::min(static_cast<size_t>(buffer.size()), static_cast<size_t>(64));
-        std::vector<std::uint8_t> haptic_data(buffer.ptr(), buffer.ptr() + data_size);
+        UtilityFunctions::print("Gamepad found");
+        
+        // Convert PackedByteArray to std::vector
+        std::vector<std::uint8_t> haptic_data(buffer.ptr(), buffer.ptr() + buffer.size());
+        UtilityFunctions::print(String("Converted to vector, size: ") + String::num((int)haptic_data.size()));
+        
+        // Print hex preview BEFORE sending to verify data
+        {
+            String hex_preview = "AudioHaptic data:";
+            size_t preview = std::min(static_cast<size_t>(16), haptic_data.size());
+            for (size_t i = 0; i < preview; ++i) {
+                char buf[8];
+                snprintf(buf, sizeof(buf), " %02X", (int)haptic_data[i]);
+                hex_preview += String(buf);
+            }
+            hex_preview += String(" (size=") + String::num((int)haptic_data.size()) + String(")");
+            UtilityFunctions::print(hex_preview);
+        }
         
         auto haptics = gamepad->GetIGamepadHaptics();
         if (haptics) {
-            haptics->AudioHapticUpdate(haptic_data);
+            UtilityFunctions::print("Haptics interface found, sending audio haptic data...");
+            try {
+                haptics->AudioHapticUpdate(haptic_data);
+                UtilityFunctions::print("AudioHapticUpdate completed successfully");
+            } catch (const std::exception& e) {
+                UtilityFunctions::print(String("AudioHapticUpdate threw exception: ") + String(e.what()));
+            }
         } else {
             UtilityFunctions::print("Haptics interface not available");
         }
