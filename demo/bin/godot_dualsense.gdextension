@@ -7,3 +7,7 @@ compatibility_minimum = "4.1"
 
 windows.debug.x86_64 = "res://bin/windows/godot_dualsense.dll"
 windows.release.x86_64 = "res://bin/windows/godot_dualsense.dll"
+macos.debug.arm64 = "res://bin/macos/libgodot_dualsense.dylib"
+macos.release.arm64 = "res://bin/macos/libgodot_dualsense.dylib"
+macos.debug.x86_64 = "res://bin/macos/libgodot_dualsense.dylib"
+macos.release.x86_64 = "res://bin/macos/libgodot_dualsense.dylib"
