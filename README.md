@@ -35,6 +35,13 @@ scons platform=windows target=template_debug
 scons platform=windows target=template_release
 ```
 
+On Linux, build with:
+```bash
+scons platform=linux target=template_debug
+# or for release
+scons platform=linux target=template_release
+```
+
 Using CMake: Open the project in CLion/Rider and build the godot_dualsense target.
 
 ## 💻 Usage (GDScript)
@@ -79,7 +86,7 @@ This project consists of two main components:
 ### **GamepadCore** (The Foundation) 🎯
 **[GamepadCore](https://github.com/rafaelvaloto/GamepadCore_)** is the backend C++ library that powers this extension. It handles:
 - Raw HID report parsing and generation
-- OS-level device discovery (Windows, with Linux/macOS support planned)
+- OS-level device discovery (Windows, Linux, and macOS)
 - Direct communication with DualSense hardware
 - Low-level trigger effects, haptics, and lightbar control
 
@@ -110,4 +117,3 @@ This software is an independent and unofficial project. It is **not** affiliated
 * **Unity:** "Unity", Unity logos, and other Unity trademarks are trademarks or registered trademarks of Unity Technologies or its affiliates in the U.S. and elsewhere.
 * **Godot:** "Godot" and the Godot logo are trademarks of the Godot Engine project.
 * **O3DE:** "O3DE" and the O3DE logo are trademarks of the Open 3D Foundation.
-

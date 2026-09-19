@@ -43,6 +43,7 @@ file(GLOB_RECURSE SOURCES
         "src/*.hpp"
         "src/*.c"
 )
+list(FILTER SOURCES EXCLUDE REGEX ".*Examples.*")
 
 # --- Filtros de Plataforma (Para o CLion não indexar arquivos de Linux no Windows) ---
 if(WIN32)
