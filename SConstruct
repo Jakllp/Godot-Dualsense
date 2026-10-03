@@ -28,7 +28,7 @@ if env["platform"] == "windows":
     env.Append(CPPDEFINES=["UNICODE", "_UNICODE"])
     env.Append(LIBS=["setupapi", "hid"])
 
-elif env["platform"] == "linuxbsd":
+elif env["platform"] == "linux":
     env.Append(CXXFLAGS=["-std=c++20"])
 
 # --- Busca Recursiva de Fontes ---
@@ -42,6 +42,8 @@ for root, dirs, files in os.walk("src"):
                 continue
             # Filtro de plataforma simples
             if env["platform"] == "windows" and ("Linux" in file_path or "Mac" in file_path or "Android" in file_path):
+                continue
+            if env["platform"] == "linux" and ("Windows" in file_path or "Mac" in file_path or "Android" in file_path):
                 continue
             sources.append(file_path)
 
