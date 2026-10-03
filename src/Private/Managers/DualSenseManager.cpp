@@ -3,7 +3,6 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/classes/engine.hpp>
-#include <cstdio>
 #include <exception>
 #include "Adapter/GodotDeviceRegistry.h"
 #include "API/GamepadDefs.h"
@@ -252,39 +251,31 @@ void DualSenseManager::set_player_led_direct(int bitmask, int brightness, int de
 }
 
 void DualSenseManager::set_audio_haptic(PackedByteArray buffer, int device_id) {
-    UtilityFunctions::print(String("set_audio_haptic called with buffer size: ") + String::num(buffer.size()));
-    
     if (buffer.is_empty()) {
-        UtilityFunctions::print("Buffer is empty!");
+        UtilityFunctions::print("Audio haptic payload must not be empty.");
+        return;
+    }
+
+    constexpr size_t AudioHapticPayloadSize = 64;
+    if (static_cast<size_t>(buffer.size()) > AudioHapticPayloadSize) {
+        UtilityFunctions::print("Audio haptic payload must be 64 bytes or less.");
         return;
     }
     
     if (const auto gamepad = FGodotDeviceRegistry::GetGamepad(device_id)) {
-        UtilityFunctions::print("Gamepad found");
-        
-        // Convert PackedByteArray to std::vector
-        std::vector<std::uint8_t> haptic_data(buffer.ptr(), buffer.ptr() + buffer.size());
-        UtilityFunctions::print(String("Converted to vector, size: ") + String::num((int)haptic_data.size()));
-        
-        // Print hex preview BEFORE sending to verify data
-        {
-            String hex_preview = "AudioHaptic data:";
-            size_t preview = std::min(static_cast<size_t>(16), haptic_data.size());
-            for (size_t i = 0; i < preview; ++i) {
-                char buf[8];
-                snprintf(buf, sizeof(buf), " %02X", (int)haptic_data[i]);
-                hex_preview += String(buf);
-            }
-            hex_preview += String(" (size=") + String::num((int)haptic_data.size()) + String(")");
-            UtilityFunctions::print(hex_preview);
+        if (gamepad->GetConnectionType() != EDSDeviceConnection::Bluetooth) {
+            UtilityFunctions::print("Audio haptics require a Bluetooth connection.");
+            return;
         }
+
+        // GamepadCore copies a fixed 64-byte payload and adds the report headers itself.
+        std::vector<std::uint8_t> haptic_data(buffer.ptr(), buffer.ptr() + buffer.size());
+        haptic_data.resize(AudioHapticPayloadSize, 0);
         
         auto haptics = gamepad->GetIGamepadHaptics();
         if (haptics) {
-            UtilityFunctions::print("Haptics interface found, sending audio haptic data...");
             try {
                 haptics->AudioHapticUpdate(haptic_data);
-                UtilityFunctions::print("AudioHapticUpdate completed successfully");
             } catch (const std::exception& e) {
                 UtilityFunctions::print(String("AudioHapticUpdate threw exception: ") + String(e.what()));
             }
