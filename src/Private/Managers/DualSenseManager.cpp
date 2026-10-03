@@ -3,6 +3,8 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <cstdio>
+#include <exception>
 #include "Adapter/GodotDeviceRegistry.h"
 #include "API/GamepadDefs.h"
 #ifdef _WIN32
@@ -11,6 +13,12 @@
 #include "Platforms/Mac/MacHardwarePolicy.h"
 #endif
 #include "GCore/Interfaces/IPlatformHardwareInfo.h"
+
+#ifdef _WIN32
+#include "Platforms/Windows/WindowsHardwarePolicy.h"
+#elif defined(__linux__)
+#include "Platforms/Linux/LinuxHardwarePolicy.h"
+#endif
 
 using namespace godot;
 
@@ -40,6 +48,9 @@ void DualSenseManager::_ready() {
 #elif defined(__APPLE__)
     std::unique_ptr<IPlatformHardwareInfo> MacInstance = std::make_unique<FMacPlatform::FMacHardware>();
     IPlatformHardwareInfo::SetInstance(std::move(MacInstance));
+#elif defined(__linux__)
+    std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
+    IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
 #endif
 
     FGodotDeviceRegistry::Initialize();
@@ -173,10 +184,9 @@ void DualSenseManager::set_trigger_custom(int hand, PackedByteArray buffer, int 
 
 void DualSenseManager::rumble(int left, int right, float duration, int device_id) {
     if (const auto gamepad = FGodotDeviceRegistry::GetGamepad(device_id)) {
-        // this shit is backwards. So let's swap it here...
+        // GamepadCore exposes the motor arguments in the opposite order.
         gamepad->SetVibration(clamp_byte(right), clamp_byte(left));
         // Store vibration state for timing
-        //... and here
         vibration_right = clamp_byte(left);
         vibration_left = clamp_byte(right);
         vibration_device_id = device_id;
