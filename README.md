@@ -12,11 +12,18 @@ A **GDExtension** for **Godot 4.x** that provides native support for the Sony Du
 - [x] **Lightbar Control:** Set RGB colors programmatically per controller.
 - [x] **Rumble/Vibration:** Standard rumble support.
 - [x] **Adaptive Triggers (Partial):** Support for basic effects (Resistance, Weapon/Vibration modes).
+- [ ] **Audio Haptics:** Experimental Bluetooth HID transport; payload format is undocumented and haptic output is unverified.
 - [x] **Hot-plugging:** Detects connection/disconnection at runtime via Signals.
 - [ ] **Touchpad:** (Help wanted)
 - [ ] **Gyroscope/Motion:** (Help wanted)
 - [ ] **Battery Status:** (Help wanted)
-- [ ] **Audio Haptics:** (Future goal)
+
+The experimental `set_audio_haptic` method accepts up to 64 bytes and forwards
+them through GamepadCore's Bluetooth HID audio-haptic report. GamepadCore adds
+the report headers and pads shorter inputs. Do not include the `0x92 0x40`
+headers yourself. The encoding and meaning of the 64-byte payload are
+undocumented, and this transport has not been verified to produce haptic
+output; USB is not supported by GamepadCore's implementation.
 
 ## 🛠️ Building & Installation
 
