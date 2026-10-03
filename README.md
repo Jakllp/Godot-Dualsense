@@ -35,6 +35,13 @@ scons platform=windows target=template_debug
 scons platform=windows target=template_release
 ```
 
+On macOS, build the universal architecture supported by your Godot installation:
+```bash
+scons platform=macos target=template_debug
+# or for release
+scons platform=macos target=template_release
+```
+
 On Linux, build with:
 ```bash
 scons platform=linux target=template_debug

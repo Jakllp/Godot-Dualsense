@@ -7,6 +7,11 @@
 #include <exception>
 #include "Adapter/GodotDeviceRegistry.h"
 #include "API/GamepadDefs.h"
+#ifdef _WIN32
+#include "Platforms/Windows/WindowsHardwarePolicy.h"
+#elif defined(__APPLE__)
+#include "Platforms/Mac/MacHardwarePolicy.h"
+#endif
 #include "GCore/Interfaces/IPlatformHardwareInfo.h"
 
 #ifdef _WIN32
@@ -40,6 +45,9 @@ void DualSenseManager::_ready() {
 #ifdef _WIN32
     std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
     IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
+#elif defined(__APPLE__)
+    std::unique_ptr<IPlatformHardwareInfo> MacInstance = std::make_unique<FMacPlatform::FMacHardware>();
+    IPlatformHardwareInfo::SetInstance(std::move(MacInstance));
 #elif defined(__linux__)
     std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
     IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
@@ -237,7 +245,7 @@ void DualSenseManager::set_player_led_direct(int bitmask, int brightness, int de
         // Use bitmask value directly for granular LED control
         // Bitmask values: 0x01=Left, 0x02=MiddleLeft, 0x04=Middle, 0x08=MiddleRight, 0x10=Right
         // Can combine: 0x01|0x04 for Left+Middle, etc.
-        gamepad->SetPlayerLedBitmask(clamp_byte(bitmask), clamp_byte(brightness));
+        gamepad->SetPlayerLed(static_cast<EDSPlayer>(clamp_byte(bitmask)), clamp_byte(brightness));
     } else {
         UtilityFunctions::print("Not found gamepad");
     }
